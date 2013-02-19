@@ -26,14 +26,14 @@ public class NPC {
 		return dialogs[new Random().nextInt(dialogs.length)];
 	}
 	
-	public static void render(Graphics g, Point point, NPC npc) {
-		int baseX = point.x + 80;
-		int baseY = point.y + 150;
+	public static void render(Graphics g, Point point, String dialog) {
+		int baseX = point.x + 150;
+		int baseY = point.y + 120;
 		Color orgColor = g.getColor();
 		g.setColor(Color.white);
-		g.fillRect(baseX - 20, baseY - 100, 300, 150);
+		g.fillRect(baseX, baseY, 300, 150);
 		g.setColor(Color.black);
-		g.drawString(npc.getDialog(), baseX, baseY);
+		g.drawString(dialog, baseX + 20, baseY + 50);
 		g.setColor(orgColor);
 	}
 

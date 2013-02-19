@@ -1,12 +1,14 @@
 package com.zimu.ao.character;
 
-import java.awt.Point;
-
-import org.newdawn.slick.Color;
-import org.newdawn.slick.Graphics;
-
+import com.zimu.ao.enums.Status;
 import com.zimu.ao.item.AbstractItem;
 import com.zimu.ao.item.Item;
+import com.zimu.ao.item.consumable.Apple;
+import com.zimu.ao.item.consumable.SuperApple;
+import com.zimu.ao.item.equipment.BasicArmor;
+import com.zimu.ao.item.equipment.BasicHelmet;
+import com.zimu.ao.item.quest.Letter;
+import com.zimu.ao.item.quest.Ring;
 
 /**
  * 玩家信息(总体)
@@ -16,16 +18,34 @@ import com.zimu.ao.item.Item;
  */
 public class Player {
 	
-	private final int BAG_ROWS = 1;
-	private final int BAG_COLS = 3;
+	private final int SIZE = 50;
 
 	private static Player instance;
 	private int gold = 1000;
 	
-	private Item[][] bag;
+	private Item[] consumable;
+	private Item[] tools;
+	private Item[] questItems;
 	
 	private Player() {
-		bag = new Item[BAG_ROWS][BAG_COLS];
+		consumable = new Item[SIZE];
+		tools = new Item[SIZE];
+		questItems = new Item[20];
+	}
+	
+	public void tester() {
+		try {
+			for (int i = 0; i < 150; i++) {
+				putItem(new BasicArmor());
+				putItem(new BasicHelmet());
+			}
+			putItem(new Letter());
+			putItem(new Ring());
+			putItem(new Apple());
+			putItem(new SuperApple());
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
 	}
 	
 	public static Player getInstance() {
@@ -36,59 +56,98 @@ public class Player {
 	
 	public int putItem(AbstractItem item) {
 		boolean added = false;
-		int x = 0, y = 0;
+		int x = 0;
+		int type = item.getType();
 		
-		loop:
-		for (x = 0; x < BAG_ROWS; x++)
-			for (y = 0; y < BAG_COLS; y++) {
-				Item it = null;
-				try {
-					it = bag[x][y];
-				} catch (ArrayIndexOutOfBoundsException e) {
-					break loop;
-				}
-				if (it == null)
-					break loop;
-				else if (it.equals(item) && it.getAmount() < 25) {
-					added = true;
-					it.add(1);
-					break loop;
-				}
+		for (x = 0; x < SIZE; x++) {
+			Item it = null;
+			try {
+				if (type == AbstractItem.CONSUMABLE)
+					it = consumable[x];
+				else if (type == AbstractItem.TOOLS)
+					it = tools[x];
+				else if (type == AbstractItem.QUESTITEM)
+					it = questItems[x];
+			} catch (ArrayIndexOutOfBoundsException e) {
+				break;
 			}
+			if (it == null) break;
+			else if (it.equals(item) && it.getAmount() < Item.MAX) {
+				added = true;
+				it.add(1);
+				break;
+			}
+		}
 		if (!added) {
-			if (x >= BAG_ROWS)
+			if (x >= SIZE)
 				return -1;
-			bag[x][y] = new Item(item);
-			bag[x][y].add(1);
+			if (type == AbstractItem.CONSUMABLE) {
+				consumable[x] = new Item(item);
+				consumable[x].add(1);
+			} else if (type == AbstractItem.TOOLS) {
+				tools[x] = new Item(item);
+				tools[x].add(1);
+			} else if (type == AbstractItem.QUESTITEM) {
+				questItems[x] = new Item(item);
+				questItems[x].add(1);
+			}
 		}
 		
 		return 1;
 	}
 	
-	public void renderBag(Graphics g, Point point) {
-		Color orgColor = g.getColor();
-		g.setColor(Color.white);
-		g.fillRect(point.x + 20, point.y + 20, 600, 400);
-		g.setColor(Color.black);
-		g.drawString("Gold: " + String.valueOf(gold), point.x + 50, point.y + 20);
-		
-		int baseX = point.x + 30;
-		int baseY = point.y + 60;	
-		for (int i = 0; i < bag.length; i++)
-			for (int j = 0; j < bag[i].length; j++) {
-				AbstractItem item = null;
-				try {
-					item = bag[i][j].getItem();
-				} catch (NullPointerException e) {
-					break;
-				}
-				g.drawImage(item.getImage(), baseX + (j * 200), baseY + (i * 85));
-				g.drawImage(item.getLabel(), baseX + 35 + (j * 200), baseY + (i * 85));
-				g.drawImage(item.getDescription(), baseX + (j * 200), baseY + 35 + (i * 85));
-				g.drawString(String.valueOf(bag[i][j].getAmount()), baseX + 150 + (j * 200), baseY + (i * 85));
+	public Item[] sellItem(int index, int count, Status status) {
+		Item item = null;
+		if (status == Status.SHOP_CONSUMABLE)
+			item = consumable[index];
+		else if (status == Status.SHOP_TOOLS)
+			item = tools[index];
+		if (item == null) return null;
+		int res = item.remove(count);
+		gold += item.getItem().getPrice() * res / 2;
+		if (item.getAmount() == 0) {
+			if (status == Status.SHOP_CONSUMABLE) {
+				consumable[index] = null;
+				format(status);
+			} else if (status == Status.SHOP_TOOLS) {
+				tools[index] = null;
+				format(status);
 			}
-		
-		g.setColor(orgColor);
+		}
+		if (status == Status.SHOP_CONSUMABLE) 
+			return consumable;
+		else if (status == Status.SHOP_TOOLS)
+			return tools;
+		return null;
+	}
+	
+	private void format(Status status) {
+		if (status == Status.BAG_CONSUMABLE || status == Status.SHOP_CONSUMABLE) {
+			for (int i = 0; i < SIZE; i++)
+				if (consumable[i] == null)
+					for (int j = i + 1; j < SIZE; j++)
+						consumable[j - 1] = consumable[j]; 
+		} else if (status == Status.BAG_TOOLS|| status == Status.SHOP_TOOLS) {
+			for (int i = 0; i < SIZE; i++)
+				if (tools[i] == null)
+					for (int j = i + 1; j < SIZE; j++)
+						tools[j - 1] = tools[j]; 
+		} else if (status == Status.BAG_CONSUMABLE) {
+			for (int i = 0; i < SIZE; i++)
+				if (questItems[i] == null)
+					for (int j = i + 1; j < SIZE; j++)
+						questItems[j - 1] = questItems[j]; 
+		}
+	}
+	
+	public Item[] getItems(Status status) {
+		if (status == Status.BAG_CONSUMABLE || status == Status.SHOP_CONSUMABLE)
+			return consumable;
+		else if (status == Status.BAG_TOOLS|| status == Status.SHOP_TOOLS)
+			return tools;
+		else if (status == Status.BAG_QUESTITEMS) 
+			return questItems;
+		return null;
 	}
 
 	public int getGold() {

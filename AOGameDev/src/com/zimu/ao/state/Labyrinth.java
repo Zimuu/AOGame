@@ -1,5 +1,5 @@
 package com.zimu.ao.state;
-
+/*
 import java.awt.Point;
 
 import org.newdawn.slick.GameContainer;
@@ -10,6 +10,7 @@ import org.newdawn.slick.state.BasicGameState;
 import org.newdawn.slick.state.StateBasedGame;
 import org.newdawn.slick.tiled.TiledMap;
 
+import com.zimu.ao.board.SaleBoard;
 import com.zimu.ao.board.ShopBoard;
 import com.zimu.ao.controller.MainController;
 import com.zimu.ao.enums.Direction;
@@ -19,14 +20,15 @@ import com.zimu.ao.enums.Status;
 import com.zimu.ao.item.consumable.Apple;
 import com.zimu.ao.item.consumable.SuperApple;
 import com.zimu.ao.tools.Camera;
-
-public class Labyrinth extends BasicGameState {
-	
+*/
+public class Labyrinth /*extends BasicGameState */{
+	/*
 	private GameState state;
 	
 	private TiledMap tileMap;
 	private GameProperty[][] propertyMap;
 	private ShopBoard shopBoard;
+	private SaleBoard saleBoard;
 	
 	private Camera camera;
 	private MainController mc;
@@ -61,11 +63,11 @@ public class Labyrinth extends BasicGameState {
 		camera.translateGraphics();
 		mc.getSprite().draw((int) mc.getX(), (int) mc.getY());
 		switch (mc.status()) {
-			case BAG:
-				shopBoard.render(g, camera.getPosition(), mc.gold());
+			case QUESTITEMS: case CONSUMABLE: case TOOLS:
+				saleBoard.render(g, camera.getPosition(), mc.gold());
 				break;
 			case SHOP:
-				mc.getPlayer().renderBag(g, camera.getPosition());
+				shopBoard.render(g, camera.getPosition(), mc.gold());
 				break;
 			default:
 		}
@@ -75,7 +77,7 @@ public class Labyrinth extends BasicGameState {
 	public void update(GameContainer gc, StateBasedGame sbg, int delta) throws SlickException {
 		Input input = gc.getInput();
 		switch (mc.status()) {
-			case BAG:
+			case QUESTITEMS: case CONSUMABLE: case TOOLS:
 				break;
 			case SHOP:
 				if (input.isKeyPressed(Input.KEY_UP)) {
@@ -140,7 +142,7 @@ public class Labyrinth extends BasicGameState {
 				enterState(sbg);
 		}
 		if (input.isKeyPressed(Input.KEY_B)) {
-			mc.active(Status.BAG);
+			mc.active(Status.CONSUMABLE);
 		}
 		if (input.isKeyPressed(Input.KEY_ESCAPE)) {
 			shopBoard.moveCursor(Direction.NONE);
@@ -181,5 +183,5 @@ public class Labyrinth extends BasicGameState {
 	public int getID() {
 		return state.ordinal();
 	}
-
+*/
 }

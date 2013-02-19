@@ -1,7 +1,7 @@
 package com.zimu.ao.character;
 
 import com.zimu.ao.character.foe.Foe;
-import com.zomu.ao.effect.Effect;
+import com.zimu.ao.effect.Effect;
 
 /**
  * 角色之一,陆月铭

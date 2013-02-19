@@ -2,7 +2,7 @@ package com.zimu.ao.enums;
 
 public enum GameProperty {
 	
-	BLOCK, FOE, SAFE, APPLE, TBD, MISSION, UNDERGROUND, SHOP;
+	BLOCK, FOE, SAFE, APPLE, NPC, MISSION, UNDERGROUND, SHOP;
 	
 	public static GameProperty getProperty(int prop) {
 		switch (prop) {
@@ -15,7 +15,7 @@ public enum GameProperty {
 			case 3:
 				return APPLE;
 			case 4:
-				return TBD;
+				return NPC;
 			case 5:
 				return MISSION;
 			case 6:
@@ -31,7 +31,7 @@ public enum GameProperty {
 		if (property == null)
 			return true;
 		switch (property) {
-			case BLOCK: case APPLE: case SHOP:
+			case BLOCK: case APPLE: case SHOP: case NPC:
 				return true;
 			default :
 				return false;

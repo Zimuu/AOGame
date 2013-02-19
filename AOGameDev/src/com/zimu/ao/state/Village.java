@@ -10,7 +10,9 @@ import org.newdawn.slick.state.BasicGameState;
 import org.newdawn.slick.state.StateBasedGame;
 import org.newdawn.slick.tiled.TiledMap;
 
+import com.zimu.ao.board.ItemBoard;
 import com.zimu.ao.board.PreShopBoard;
+import com.zimu.ao.board.SaleBoard;
 import com.zimu.ao.board.ShopBoard;
 import com.zimu.ao.controller.MainController;
 import com.zimu.ao.enums.Direction;
@@ -19,6 +21,7 @@ import com.zimu.ao.enums.GameState;
 import com.zimu.ao.enums.Status;
 import com.zimu.ao.item.consumable.Apple;
 import com.zimu.ao.item.consumable.SuperApple;
+import com.zimu.ao.npc.NPC;
 import com.zimu.ao.tools.Camera;
 
 public class Village extends BasicGameState {
@@ -27,8 +30,13 @@ public class Village extends BasicGameState {
 	
 	private TiledMap tileMap;
 	private GameProperty[][] propertyMap;
+	private NPC[][] npcMap;
+	private String curr_dialog;
+	
 	private ShopBoard shopBoard;
 	private PreShopBoard preShopBoard;
+	private SaleBoard saleBoard;
+	private ItemBoard itemBoard;
 	
 	private Camera camera;
 	private MainController mc;
@@ -44,12 +52,26 @@ public class Village extends BasicGameState {
 		camera = new Camera(gc, tileMap);
 
 		propertyMap = new GameProperty[tileMap.getWidth()][tileMap.getHeight()];
+		npcMap = new NPC[propertyMap.length][propertyMap[0].length];
+		
+		int npc_index = 0;
 		for (int x = 0; x < tileMap.getWidth(); x++) {
 			for (int y = 0; y < tileMap.getHeight(); y++) {
 				int tileID = tileMap.getTileId(x, y, 0);
 				int value = Integer.parseInt(tileMap.getTileProperty(tileID, "prop", "0"));
 				GameProperty property = GameProperty.getProperty(value);
 				propertyMap[x][y] = property;
+				if (property == GameProperty.NPC) {
+					switch (npc_index++) {
+						case 0:
+							npcMap[x][y] = new NPC(null, "Hahaha", "Hehehe", "Hohoho");
+							break;
+						case 1:
+							npcMap[x][y] = new NPC(null, "WTF", "LOL", "NOOB");
+							break;
+						default:
+					}
+				}
 			}
 		}
 		
@@ -58,6 +80,10 @@ public class Village extends BasicGameState {
 				new SuperApple(), new Apple(), new SuperApple(),
 				new SuperApple(), new Apple(), new SuperApple());
 		preShopBoard = new PreShopBoard();
+		saleBoard = new SaleBoard();
+		itemBoard = new ItemBoard();
+		
+		mc.getPlayer().tester();
 	}
 
 	@Override
@@ -66,8 +92,17 @@ public class Village extends BasicGameState {
 		camera.translateGraphics();
 		mc.getSprite().draw((int) mc.getX(), (int) mc.getY());
 		switch (mc.status()) {
-			case BAG:
-				mc.getPlayer().renderBag(g, camera.getPosition());
+			case NPC:
+				NPC.render(g, camera.getPosition(), curr_dialog);
+				try {
+					Thread.sleep(1000);
+				} catch (Exception e) {}
+				break;
+			case SHOP_CONSUMABLE: case SHOP_TOOLS:
+				saleBoard.render(g, camera.getPosition(), mc.gold());
+				break;
+			case BAG_CONSUMABLE: case BAG_TOOLS: case BAG_QUESTITEMS:
+				itemBoard.render(g, camera.getPosition(), mc.gold());
 				break;
 			case SHOP:
 				preShopBoard.render(g, camera.getPosition());
@@ -76,6 +111,7 @@ public class Village extends BasicGameState {
 				shopBoard.render(g, camera.getPosition(), mc.gold());
 				break;
 			case SELL:
+				saleBoard.render(g, camera.getPosition(), mc.gold());
 				break;
 			default:
 		}
@@ -85,7 +121,30 @@ public class Village extends BasicGameState {
 	public void update(GameContainer gc, StateBasedGame sbg, int delta) throws SlickException {
 		Input input = gc.getInput();
 		switch (mc.status()) {
-			case BAG:
+			case NPC:
+				if (input.isKeyPressed(Input.KEY_ESCAPE) || input.isKeyPressed(Input.KEY_SPACE)) {
+					mc.deactive();
+				}
+				break;
+			case BAG_CONSUMABLE: case BAG_TOOLS: case BAG_QUESTITEMS:
+				if (input.isKeyPressed(Input.KEY_TAB)) {
+					itemBoard.setItems(mc.getPlayer().getItems(itemBoard.switchItemPage()));
+				} else if (input.isKeyPressed(Input.KEY_UP)) {
+					itemBoard.moveCursor(Direction.UP);
+				} else if (input.isKeyPressed(Input.KEY_DOWN)) {
+					itemBoard.moveCursor(Direction.DOWN);
+				} 
+				break;
+			case SHOP_CONSUMABLE: case SHOP_TOOLS:
+				if (input.isKeyPressed(Input.KEY_TAB)) {
+					saleBoard.setItems(mc.getPlayer().getItems(saleBoard.switchItemPage()));
+				} else if (input.isKeyPressed(Input.KEY_UP)) {
+					saleBoard.moveCursor(Direction.UP);
+				} else if (input.isKeyPressed(Input.KEY_DOWN)) {
+					saleBoard.moveCursor(Direction.DOWN);
+				} else if (input.isKeyPressed(Input.KEY_SPACE)) {
+					saleBoard.sell(mc.getPlayer());
+				}
 				break;
 			case SHOP:
 				if (input.isKeyPressed(Input.KEY_RIGHT)) {
@@ -94,6 +153,10 @@ public class Village extends BasicGameState {
 					preShopBoard.moveCursor(Direction.LEFT);
 				} else if (input.isKeyPressed(Input.KEY_SPACE)) {
 					mc.active(preShopBoard.getSelected());
+					if (preShopBoard.getSelected() == Status.SELL) {
+						saleBoard.setItems(mc.getPlayer().getItems(Status.SHOP_CONSUMABLE));
+						mc.active(Status.SHOP_CONSUMABLE);
+					}
 				}
 				break;
 			case BUY:
@@ -146,19 +209,22 @@ public class Village extends BasicGameState {
 							clearTile(delta, GameProperty.APPLE, GameProperty.BLOCK);
 						} else
 							System.out.println("bag is full");
-					}
-					else if (frontTiles[0] == GameProperty.SHOP || frontTiles[1] == GameProperty.SHOP) {
+					} else if (frontTiles[0] == GameProperty.SHOP || frontTiles[1] == GameProperty.SHOP) {
 						mc.active(Status.SHOP);
+					} else if (frontTiles[0] == GameProperty.NPC) {
+						Point[] pos = mc.getFrontPos(delta);
+						curr_dialog = npcMap[pos[0].x][pos[0].y].getDialog();
+						mc.active(Status.NPC);
 					}
+				}
+				if (input.isKeyPressed(Input.KEY_B)) {
+					itemBoard.setItems(mc.getPlayer().getItems(Status.BAG_CONSUMABLE));
+					mc.active(Status.BAG_CONSUMABLE);
 				}
 				camera.centerOn(mc.getX(), mc.getY());
 				enterState(sbg);
 		}
-		if (input.isKeyPressed(Input.KEY_B)) {
-			mc.active(Status.BAG);
-		}
 		if (input.isKeyPressed(Input.KEY_ESCAPE)) {
-			shopBoard.moveCursor(Direction.NONE);
 			mc.deactive();
 		}
 	}

@@ -24,7 +24,7 @@ public class AOGame extends StateBasedGame {
 
 	@Override
 	public void initStatesList(GameContainer gc) throws SlickException {
-		this.addState(new Labyrinth(GameState.LABYRINTH));
+		//this.addState(new Labyrinth(GameState.LABYRINTH));
 		this.addState(new Village(GameState.START_VILLAGE));
 		this.enterState(GameProcessController.CURRENT_STATE);
 	}

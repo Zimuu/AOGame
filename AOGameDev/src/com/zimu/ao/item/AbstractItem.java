@@ -10,11 +10,16 @@ import org.newdawn.slick.Image;
  */
 public abstract class AbstractItem {
 
+	public static final int CONSUMABLE = 0;
+	public static final int TOOLS = 1;
+	public static final int QUESTITEM = 2;
+	
 	protected Image image;
 	protected int price;
 	protected String name;
 	protected Image label;
 	protected Image description;
+	protected int type;
 	
 	public AbstractItem(String name, int price, Image image, Image label, Image description) {
 		this.image = image;
@@ -42,6 +47,10 @@ public abstract class AbstractItem {
 
 	public Image getDescription() {
 		return description;
+	}
+	
+	public int getType() {
+		return type;
 	}
 	
 	@Override

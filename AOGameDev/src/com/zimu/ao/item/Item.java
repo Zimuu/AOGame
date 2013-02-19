@@ -8,7 +8,7 @@ package com.zimu.ao.item;
  */
 public class Item {
 	
-	private static final int maxAmount = 25;
+	public static final int MAX = 50;
 	
 	private int amount;
 	private AbstractItem item;
@@ -18,9 +18,9 @@ public class Item {
 	}
 	
 	public int add(int n) {
-		if (amount + n >= maxAmount) {
-			int temp = maxAmount - amount;
-			amount = maxAmount;
+		if (amount + n >= MAX) {
+			int temp = MAX - amount;
+			amount = MAX;
 			return temp;
 		} else {
 			amount +=n;

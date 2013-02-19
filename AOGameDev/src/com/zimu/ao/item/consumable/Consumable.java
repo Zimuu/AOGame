@@ -15,6 +15,7 @@ public abstract class Consumable extends AbstractItem {
 
 	public Consumable(String name, int price, Image image, Image label, Image description) {
 		super(name, price, image, label, description);
+		this.type = CONSUMABLE;
 	}
 	
 	public abstract int consume(Char character);

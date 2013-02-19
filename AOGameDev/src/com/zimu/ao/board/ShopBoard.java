@@ -21,6 +21,8 @@ import com.zimu.ao.item.AbstractItem;
  */
 @SuppressWarnings("deprecation")
 public class ShopBoard {
+	
+	private final int ITEMS_PER_PAGE = 5;
 		
 	private AbstractItem[] items;
 	private int totalItems;
@@ -47,8 +49,8 @@ public class ShopBoard {
 		} else if (direction == Direction.DOWN) {
 			if (cursor < totalItems - 1) cursor++;
 		}
-		if (cursor <= 5) top_cursor = 0;
-		else top_cursor = cursor - 5;
+		if (cursor <= ITEMS_PER_PAGE) top_cursor = 0;
+		else top_cursor = cursor - ITEMS_PER_PAGE;
 	}
 	
 	public int buy(Player player) {
@@ -74,7 +76,7 @@ public class ShopBoard {
 		
 		int baseX = point.x + 80;
 		int baseY = point.y + 90;
-		for (int i = top_cursor, j = 0; j < 6; i++, j++) {
+		for (int i = top_cursor, j = 0; j < ITEMS_PER_PAGE + 1; i++, j++) {
 			if (i >= totalItems) break;
 			AbstractItem item = items[i];
 			if (item == null) break;
