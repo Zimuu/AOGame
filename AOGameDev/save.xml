@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Save>
+	<Characters>
+		<Gold>1000</Gold>
+		<State>START_VILLAGE</State>
+		<Position>100, 200</Position>
+		
+		<Character name="YueMing">
+			<Experience></Experience>
+			<Equipments>
+				<Equipment></Equipment>
+				<Equipment></Equipment>
+				<Equipment></Equipment>
+			</Equipments>
+		</Character>
+		<Character name="LingXing">
+			<Experience></Experience>
+			<Equipments></Equipments>
+		</Character>
+		<Items>
+			<Item name="Apple" count="10" />
+		</Items>
+	</Characters>
+</Save>
