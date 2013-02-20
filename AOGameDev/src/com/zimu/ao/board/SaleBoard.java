@@ -81,8 +81,8 @@ public class SaleBoard {
 			if (item == null) break;
 			g.drawImage(item.getItem().getImage(), baseX, baseY + (j * 55));
 			g.drawImage(item.getItem().getLabel(), baseX + 35, baseY + (j * 55));
-			g.drawString(String.valueOf(item.getItem().getPrice() / 2), baseX + 155, baseY + (j * 55));
-			g.drawString(String.valueOf(item.getAmount()), baseX + 205, baseY + (j * 55));
+			g.drawString(String.valueOf(item.getItem().getPrice() / 2), baseX + 155, baseY + 7 + (j * 55));
+			g.drawString(String.valueOf(item.getAmount()), baseX + 205, baseY + 7 + (j * 55));
 			if (cursor == i) {
 				g.drawImage(item.getItem().getDescription(), baseX + 250, baseY);
 				g.drawRect(baseX - 30, baseY - 10 + (j * 55), 265, 55);

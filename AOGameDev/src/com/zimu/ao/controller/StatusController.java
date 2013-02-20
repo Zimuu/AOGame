@@ -32,7 +32,8 @@ public class StatusController {
 	public boolean inUnmovableStatus() {
 		return status == Status.BATTLE || status == Status.SHOP_CONSUMABLE || status == Status.SHOP_TOOLS 
 				|| status == Status.BAG_CONSUMABLE || status == Status.BAG_TOOLS 
-				|| status == Status.BAG_QUESTITEMS || status == Status.NPC ||
+				|| status == Status.BAG_QUESTITEMS || status == Status.NPC 
+				|| status == Status.CHAR_STATUS ||
 				status == Status.SHOP || status == Status.SELL || status == Status.BUY;
 	}
 

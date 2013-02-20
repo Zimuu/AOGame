@@ -3,7 +3,7 @@ package com.zimu.ao.item.consumable;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 
-import com.zimu.ao.character.Char;
+import com.zimu.ao.character.AbstractChar;
 
 public class Apple extends Consumable {
 	
@@ -17,7 +17,7 @@ public class Apple extends Consumable {
 	}
 
 	@Override
-	public int consume(Char character) {
+	public int consume(AbstractChar character) {
 		return character.healHP(health);
 	}
 	

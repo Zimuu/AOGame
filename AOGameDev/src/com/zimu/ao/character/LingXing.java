@@ -8,23 +8,23 @@ import com.zimu.ao.item.equipment.Equipment;
 import com.zimu.ao.item.equipment.NullEquipment;
 
 /**
- * 男主,陆月铭
+ * 女主,尹凌星
  * @author zimu
  *
  */
-public class YueMing extends AbstractChar {
+public class LingXing extends AbstractChar {
 
-	public YueMing() throws SlickException {
-		this.image = new Image("resource/image/char/yueming.jpg");
-		this.name = "Lu YueMing";
-		this.experience = 50;
-		this.level = 1;
-		this.currHealth = 90;
-		this.orgHealth = 100;
+	public LingXing() throws SlickException {
+		this.image = new Image("resource/image/char/lingxing.jpg");
+		this.name = "Yin LingXing";
+		this.experience = 30;
+		this.level = 2;
+		this.currHealth = 100;
+		this.orgHealth = 110;
 		this.health = orgHealth;
-		this.orgAttack = 15;
+		this.orgAttack = 18;
 		this.attack = orgAttack;
-		this.orgDefence = 5;
+		this.orgDefence = 8;
 		this.defence = orgDefence;
 		initEquipments();
 	}
@@ -39,4 +39,5 @@ public class YueMing extends AbstractChar {
 		equipments.put(EquipmentType.CHARM, e);
 	}
 
+	
 }

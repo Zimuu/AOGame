@@ -10,6 +10,7 @@ import org.newdawn.slick.state.BasicGameState;
 import org.newdawn.slick.state.StateBasedGame;
 import org.newdawn.slick.tiled.TiledMap;
 
+import com.zimu.ao.board.CharBoard;
 import com.zimu.ao.board.ItemBoard;
 import com.zimu.ao.board.PreShopBoard;
 import com.zimu.ao.board.SaleBoard;
@@ -37,6 +38,7 @@ public class Village extends BasicGameState {
 	private PreShopBoard preShopBoard;
 	private SaleBoard saleBoard;
 	private ItemBoard itemBoard;
+	private CharBoard charBoard;
 	
 	private Camera camera;
 	private MainController mc;
@@ -82,6 +84,7 @@ public class Village extends BasicGameState {
 		preShopBoard = new PreShopBoard();
 		saleBoard = new SaleBoard();
 		itemBoard = new ItemBoard();
+		charBoard = new CharBoard();
 		
 		mc.getPlayer().tester();
 	}
@@ -92,6 +95,9 @@ public class Village extends BasicGameState {
 		camera.translateGraphics();
 		mc.getSprite().draw((int) mc.getX(), (int) mc.getY());
 		switch (mc.status()) {
+			case CHAR_STATUS:
+				charBoard.render(g, camera.getPosition());
+				break;
 			case NPC:
 				NPC.render(g, camera.getPosition(), curr_dialog);
 				try {
@@ -121,8 +127,13 @@ public class Village extends BasicGameState {
 	public void update(GameContainer gc, StateBasedGame sbg, int delta) throws SlickException {
 		Input input = gc.getInput();
 		switch (mc.status()) {
+			case CHAR_STATUS:
+				if (input.isKeyPressed(Input.KEY_TAB)) {
+					charBoard.switchChar();
+				}
+				break;
 			case NPC:
-				if (input.isKeyPressed(Input.KEY_ESCAPE) || input.isKeyPressed(Input.KEY_SPACE)) {
+				if (input.isKeyPressed(Input.KEY_SPACE)) {
 					mc.deactive();
 				}
 				break;
@@ -220,6 +231,10 @@ public class Village extends BasicGameState {
 				if (input.isKeyPressed(Input.KEY_B)) {
 					itemBoard.setItems(mc.getPlayer().getItems(Status.BAG_CONSUMABLE));
 					mc.active(Status.BAG_CONSUMABLE);
+				}
+				if (input.isKeyPressed(Input.KEY_C)) {
+					charBoard.setChar(mc.getPlayer().getCharacters());
+					mc.active(Status.CHAR_STATUS);
 				}
 				camera.centerOn(mc.getX(), mc.getY());
 				enterState(sbg);

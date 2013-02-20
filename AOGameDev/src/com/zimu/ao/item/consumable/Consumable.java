@@ -2,7 +2,7 @@ package com.zimu.ao.item.consumable;
 
 import org.newdawn.slick.Image;
 
-import com.zimu.ao.character.Char;
+import com.zimu.ao.character.AbstractChar;
 import com.zimu.ao.item.AbstractItem;
 
 /**
@@ -18,6 +18,6 @@ public abstract class Consumable extends AbstractItem {
 		this.type = CONSUMABLE;
 	}
 	
-	public abstract int consume(Char character);
+	public abstract int consume(AbstractChar character);
 
 }

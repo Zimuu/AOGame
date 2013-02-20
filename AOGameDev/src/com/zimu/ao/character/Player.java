@@ -1,5 +1,6 @@
 package com.zimu.ao.character;
 
+import com.zimu.ao.enums.EquipmentType;
 import com.zimu.ao.enums.Status;
 import com.zimu.ao.item.AbstractItem;
 import com.zimu.ao.item.Item;
@@ -7,6 +8,7 @@ import com.zimu.ao.item.consumable.Apple;
 import com.zimu.ao.item.consumable.SuperApple;
 import com.zimu.ao.item.equipment.BasicArmor;
 import com.zimu.ao.item.equipment.BasicHelmet;
+import com.zimu.ao.item.equipment.Equipment;
 import com.zimu.ao.item.quest.Letter;
 import com.zimu.ao.item.quest.Ring;
 
@@ -22,6 +24,7 @@ public class Player {
 
 	private static Player instance;
 	private int gold = 1000;
+	private AbstractChar[] characters;
 	
 	private Item[] consumable;
 	private Item[] tools;
@@ -31,14 +34,22 @@ public class Player {
 		consumable = new Item[SIZE];
 		tools = new Item[SIZE];
 		questItems = new Item[20];
+		characters = new AbstractChar[4];
+		try {
+			characters[0] = new YueMing();
+			characters[0].equip(new BasicArmor());
+			characters[0].equip(new BasicHelmet());
+			characters[1] = new LingXing();
+			characters[1].equip(new BasicHelmet());
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
 	}
 	
 	public void tester() {
 		try {
-			for (int i = 0; i < 150; i++) {
-				putItem(new BasicArmor());
-				putItem(new BasicHelmet());
-			}
+			putItem(new BasicArmor());
+			putItem(new BasicHelmet());
 			putItem(new Letter());
 			putItem(new Ring());
 			putItem(new Apple());
@@ -52,6 +63,22 @@ public class Player {
 		if (instance == null)
 			instance = new Player();
 		return instance;
+	}
+	
+	public int equip(int index, AbstractChar character) {
+		Equipment e = (Equipment) tools[index].getItem();
+		Equipment returned_e = character.equip(e);
+		if (returned_e.getEquipmentType() == EquipmentType.NULL)
+			return 1;
+		if (returned_e.equals(e))
+			return 1;
+		putItem(returned_e);
+		removeItem(index, 1, Status.BAG_TOOLS);
+		return 1;
+	}
+	
+	public int unequip(AbstractItem item, AbstractChar character) {
+		return -1;
 	}
 	
 	public int putItem(AbstractItem item) {
@@ -94,6 +121,26 @@ public class Player {
 		}
 		
 		return 1;
+	}
+	
+	public void removeItem(int index, int count, Status status) {
+		Item item = null;
+		if (status == Status.SHOP_CONSUMABLE)
+			item = consumable[index];
+		else if (status == Status.SHOP_TOOLS)
+			item = tools[index];
+		if (item == null) return;
+		
+		item.remove(count);
+		if (item.getAmount() == 0) {
+			if (status == Status.SHOP_CONSUMABLE) {
+				consumable[index] = null;
+				format(status);
+			} else if (status == Status.SHOP_TOOLS) {
+				tools[index] = null;
+				format(status);
+			}
+		}
 	}
 	
 	public Item[] sellItem(int index, int count, Status status) {
@@ -148,6 +195,10 @@ public class Player {
 		else if (status == Status.BAG_QUESTITEMS) 
 			return questItems;
 		return null;
+	}
+	
+	public AbstractChar[] getCharacters() {
+		return characters;
 	}
 
 	public int getGold() {

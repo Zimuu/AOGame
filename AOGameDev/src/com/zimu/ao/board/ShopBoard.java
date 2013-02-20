@@ -82,7 +82,7 @@ public class ShopBoard {
 			if (item == null) break;
 			g.drawImage(item.getImage(), baseX, baseY + (j * 55));
 			g.drawImage(item.getLabel(), baseX + 35, baseY + (j * 55));
-			g.drawString(String.valueOf(item.getPrice()), baseX + 150, baseY + (j * 55));
+			g.drawString(String.valueOf(item.getPrice()), baseX + 150, baseY + 7 + (j * 55));
 			if (cursor == i) {
 				g.drawImage(item.getDescription(), baseX + 220, baseY);
 				g.drawRect(baseX - 30, baseY - 10 + (j * 55), 235, 55);
