@@ -52,7 +52,7 @@ public class Item {
 	public AbstractItem getItem() {
 		return item;
 	}
-	
+
 	@Override
 	public boolean equals(Object obj) {
 		if (obj instanceof AbstractItem) {

@@ -11,7 +11,7 @@ import org.newdawn.slick.Image;
 public abstract class AbstractItem {
 
 	public static final int CONSUMABLE = 0;
-	public static final int TOOLS = 1;
+	public static final int EQUIPMENT = 1;
 	public static final int QUESTITEM = 2;
 	
 	protected Image image;
@@ -55,7 +55,7 @@ public abstract class AbstractItem {
 	
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof Item))
+		if (!(obj instanceof AbstractItem))
 			return false;
 		AbstractItem item = (AbstractItem) obj;
 		return item.name.equals(this.name);

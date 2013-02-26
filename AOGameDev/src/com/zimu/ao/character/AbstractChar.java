@@ -9,8 +9,8 @@ import org.newdawn.slick.SlickException;
 
 import com.zimu.ao.buff.Buff;
 import com.zimu.ao.buff.Poison;
-import com.zimu.ao.enums.EquipmentType;
 import com.zimu.ao.item.equipment.Equipment;
+import com.zimu.ao.item.equipment.NullEquipment;
 
 /**
  * 角色
@@ -23,8 +23,10 @@ public abstract class AbstractChar {
 	
 	protected Image image;
 	protected Image healthImage;
-	protected Image attackImage;
-	protected Image defenceImage;
+	protected Image primaryAttackImage;
+	protected Image secondaryAttackImage;
+	protected Image primaryDefenceImage;
+	protected Image armorDefenceImage;
 
 	protected String name;
 	protected int experience;
@@ -34,42 +36,58 @@ public abstract class AbstractChar {
 	protected int orgHealth;
 	protected int health;
 	
-	protected int orgAttack;
-	protected int attack;
+	protected int orgPrimaryAttack;
+	protected int primaryAttack;
+	protected int orgSecondaryAttack;
+	protected int secondaryAttack;
+	protected int orgPrimaryDefence;
+	protected int primaryDefence;
+	protected int orgArmorDefence;
+	protected int armorDefence;
 	
-	protected int orgDefence;
-	protected int defence;
 	protected List<Buff> buffs;
 	
-	protected Map<EquipmentType, Equipment> equipments;
+	protected Map<Integer, Equipment> equipments;
 	
 	public AbstractChar() throws SlickException {
 		healthImage = new Image("resource/image/char/health.jpg");
-		attackImage = new Image("resource/image/char/attack.jpg");
-		defenceImage = new Image("resource/image/char/defence.jpg");
-		equipments = new HashMap<EquipmentType, Equipment>();
+		primaryAttackImage = new Image("resource/image/char/primaryAttack.jpg");
+		secondaryAttackImage = new Image("resource/image/char/secondaryAttack.png");
+		primaryDefenceImage = new Image("resource/image/char/primaryDefence.jpg");
+		armorDefenceImage = new Image("resource/image/char/armorDefence.jpg");
+		equipments = new HashMap<Integer, Equipment>();
 	}
 	
 	public Equipment equip(Equipment e) {
 		Equipment curr_e = equipments.get(e.getEquipmentType());
 		if (curr_e == null)
 			return null;
-		health -= curr_e.getHealth();
-		attack -= curr_e.getAttack();
-		defence -= curr_e.getDefence();
 		
-		health += e.getHealth();
-		attack += e.getAttack();
-		defence += e.getDefence();
+		health = health - curr_e.getHealth() + e.getHealth();
+		primaryAttack = primaryAttack - curr_e.getPrimaryAttack() + e.getPrimaryAttack();
+		secondaryAttack = secondaryAttack - curr_e.getSecondaryAttack() + e.getSecondaryAttack();
+		primaryDefence = primaryDefence - curr_e.getPrimaryDefence() + e.getPrimaryDefence();
+		armorDefence = armorDefence - curr_e.getArmorDefence() + e.getArmorDefence();
+		
+		equipments.put(e.getEquipmentType(), e);
+		
 		return curr_e;
 	}
 	
-	public Equipment unequip(Equipment e) {
-		Equipment curr_e = equipments.get(e.getEquipmentType());
-		health -= curr_e.getHealth();
-		attack -= curr_e.getAttack();
-		defence -= curr_e.getDefence();		
-		return curr_e;
+	public Equipment unequip(int equipmentType) {
+		Equipment e = equipments.get(equipmentType);
+		
+		health -= e.getHealth();
+		primaryAttack -= e.getPrimaryAttack();
+		secondaryAttack -= e.getSecondaryAttack();
+		primaryDefence -= e.getPrimaryDefence();
+		armorDefence -= e.getArmorDefence();
+		
+		try {
+			equipments.put(equipmentType, new NullEquipment());
+		} catch (SlickException e1) { }
+		
+		return e;
 	}
 	
 	public int healHP(int hp) {
@@ -116,29 +134,57 @@ public abstract class AbstractChar {
 	public int getHealth() {
 		return health;
 	}
-	
-	public int getOrgDefence() {
-		return orgDefence;
+
+	public Image getPrimaryAttackImage() {
+		return primaryAttackImage;
 	}
 
-	public int getDefence() {
-		return defence;
+	public Image getSecondaryAttackImage() {
+		return secondaryAttackImage;
 	}
 
-	public int getOrgAttack() {
-		return orgAttack;
+	public Image getPrimaryDefenceImage() {
+		return primaryDefenceImage;
 	}
 
-	public int getAttack() {
-		return attack;
+	public Image getArmorDefenceImage() {
+		return armorDefenceImage;
+	}
+
+	public int getOrgPrimaryAttack() {
+		return orgPrimaryAttack;
+	}
+
+	public int getPrimaryAttack() {
+		return primaryAttack;
+	}
+
+	public int getOrgSecondaryAttack() {
+		return orgSecondaryAttack;
+	}
+
+	public int getSecondaryAttack() {
+		return secondaryAttack;
+	}
+
+	public int getOrgPrimaryDefence() {
+		return orgPrimaryDefence;
+	}
+
+	public int getPrimaryDefence() {
+		return primaryDefence;
+	}
+
+	public int getOrgArmorDefence() {
+		return orgArmorDefence;
+	}
+
+	public int getArmorDefence() {
+		return armorDefence;
 	}
 
 	public List<Buff> getBuffs() {
 		return buffs;
-	}
-	
-	public Map<EquipmentType, Equipment> getEquipments() {
-		return equipments;
 	}
 	
 	public Image getImage() {
@@ -149,12 +195,8 @@ public abstract class AbstractChar {
 		return healthImage;
 	}
 	
-	public Image getAttackImage() {
-		return attackImage;
-	}
-	
-	public Image getDefenceImage() {
-		return defenceImage;
+	public Map<Integer, Equipment> getEquipments() {
+		return equipments;
 	}
 	
 }

@@ -1,104 +1,117 @@
 package com.zimu.ao.board;
 
 import java.awt.Point;
-import java.util.Arrays;
+import java.util.List;
 
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Input;
 
-import com.zimu.ao.enums.Direction;
-import com.zimu.ao.enums.Status;
+import com.zimu.ao.character.Player;
+import com.zimu.ao.enums.Menu;
 import com.zimu.ao.item.Item;
+import com.zimu.ao.state.AOGame;
 
-public class ItemBoard {
+public class ItemBoard extends RenderableScreen {
 	
-	private final int ITEMS_PER_PAGE = 5;
-	private Status status = Status.BAG_CONSUMABLE;
+	public static final int CONSUMABLE = 0;
+	public static final int EQUIPMENT = 1;
+	public static final int QUEST = 2;
 	
-	private Item[] items;
-	private int totalItems;
+	private final int ITEMS_PER_PAGE = 6;
 	
-	private int cursor;
-	private int top_cursor;
+	private List<Item> items;
 	
-	public ItemBoard() {}
+	private int page;
 	
-	public void setItems(Item[] it) {
-		int i = 0;
-		for (; i < it.length; i++)
-			if (it[i] == null) break;
-		items = Arrays.copyOf(it, i);
-		totalItems = items.length;
-		cursor = 0;
-		top_cursor = 0;
+	public ItemBoard(Player player) {
+		this.player = player;
 	}
 	
-	public Status switchItemPage() {
-		if (status == Status.BAG_CONSUMABLE)
-			status = Status.BAG_TOOLS;
-		else if (status == Status.BAG_TOOLS)
-			status = Status.BAG_QUESTITEMS;
-		else if (status == Status.BAG_QUESTITEMS)
-			status = Status.BAG_CONSUMABLE;
-		return status;
-	}
-	
-	public void moveCursor(Direction direction) {
-		if (direction == Direction.UP) {
+	public boolean actionPerformed(Input input) {
+		if (!draw) return false;
+		if (input.isKeyPressed(Input.KEY_TAB)) {
+			if (page == CONSUMABLE) {
+				page++;
+				items = player.getEquipments();
+			} else if (page == EQUIPMENT) {
+				page++;
+				items = player.getQuestItems();
+			} else if (page == QUEST) {
+				page = 0;
+				items = player.getConsumable();
+			}
+		} else if (input.isKeyPressed(Input.KEY_UP)) {
 			if (cursor >= 1) cursor--;
-		} else if (direction == Direction.DOWN) {
-			if (cursor < totalItems - 1) cursor++;
+		} else if (input.isKeyPressed(Input.KEY_DOWN)) {
+			if (cursor < items.size() - 1) cursor++;
+		} else if (input.isKeyPressed(Input.KEY_ESCAPE)) {
+			draw = false;
+			setChanged();
+			notifyObservers(Menu.valueOf(0));
 		}
-		if (cursor <= ITEMS_PER_PAGE) top_cursor = 0;
-		else top_cursor = cursor - ITEMS_PER_PAGE;
+		
+		if (cursor <= ITEMS_PER_PAGE) topCursor = 0;
+		else topCursor = cursor - ITEMS_PER_PAGE;
+		return true;
 	}
 	
-	public void render(Graphics g, Point point, int gold) {
+	public void render(Graphics g, Point point) {
 		Color orgColor = g.getColor();
+		int x = point.x;
+		int y = point.y;
+
 		g.setColor(Color.white);
-		g.fillRect(point.x + 20, point.y + 20, 600, 400);
+		g.fillRect(point.x, point.y, AOGame.WIDTH, AOGame.HEIGHT);
 		g.setColor(Color.black);
-		g.drawString("Gold: " + String.valueOf(gold), point.x + 50, point.y + 30);
-		g.drawString("Item           Price Amount", point.x + 60, point.y + 60);
-		
-		int baseX = point.x + 60;
-		int baseY = point.y + 90;
-		for (int i = top_cursor, j = 0; j < ITEMS_PER_PAGE + 1; i++, j++) {
-			if (i >= totalItems) break;
+		g.drawRect(x + 20, y + 30, 275, 425);
+		g.drawLine(x + 20, y + 60, 275 + x + 20, y + 60);
+		g.drawString("Gold: " + String.valueOf(player.getGold()), x + 10, y + 10);
+		g.drawString("Item          Price Amount", x + 60, y + 35);
+
+		for (int i = topCursor, j = 0; j < ITEMS_PER_PAGE + 1; i++, j++) {
+			if (i >= items.size()) break;
 			Item item = null;
 			try {
-				item = items[i];
+				item = items.get(i);
 			} catch (Exception e) {
 				break;
 			}
 			if (item == null) break;
-			g.setColor(Color.black);
-			g.drawImage(item.getItem().getImage(), baseX, baseY + (j * 55));
-			g.drawImage(item.getItem().getLabel(), baseX + 35, baseY + (j * 55));
-			g.drawString(String.valueOf(item.getItem().getPrice()), baseX + 155, baseY + 7 + (j * 55));
-			g.drawString(String.valueOf(item.getAmount()), baseX + 205, baseY + 7 + (j * 55));
+			g.drawImage(item.getItem().getImage(), x + 30, y + 80 + (j * 55));
+			g.drawImage(item.getItem().getLabel(), x + 65, y + 80 + (j * 55));
+			g.drawString(String.valueOf(item.getItem().getPrice() / 2), x + 205, y + 87 + (j * 55));
+			g.drawString(String.valueOf(item.getAmount()), x + 255, y + 87 + (j * 55));
 			if (cursor == i) {
-				g.drawImage(item.getItem().getDescription(), baseX + 250, baseY);
-				g.drawRect(baseX - 30, baseY - 10 + (j * 55), 265, 55);
+				g.drawImage(item.getItem().getDescription(), x + 300, y + 80);
+				g.drawRect(x + 20, y + 70 + (j * 55), 275, 55);
 			}
 		}
-		if (status == Status.BAG_CONSUMABLE) {
-			g.drawString("Consumable", baseX + 150, point.y + 30);
+		if (page == CONSUMABLE) {
+			g.drawString("Consumable", x + 210, y + 10);
 			g.setColor(Color.gray);
-			g.drawString("Tools", baseX + 270, point.y + 30);
-			g.drawString("Quest", baseX + 350, point.y + 30);
-		} else if (status == Status.BAG_TOOLS) {
-			g.drawString("Tools", baseX + 270, point.y + 30);
+			g.drawString("Equipments", x + 330, y + 10);
+			g.drawString("QuestItems", x + 450, y + 10);
+		} else if (page == EQUIPMENT) {
+			g.drawString("Equipments", x + 330, y + 10);
 			g.setColor(Color.gray);
-			g.drawString("Consumable", baseX + 150, point.y + 30);
-			g.drawString("Quest", baseX + 350, point.y + 30);
-		} else if (status == Status.BAG_QUESTITEMS) {
-			g.drawString("Quest", baseX + 350, point.y + 30);
+			g.drawString("Consumable", x + 210, y + 10);
+			g.drawString("QuestItems", x + 450, y + 10);
+		} else if (page == QUEST) {
+			g.drawString("QuestItems", x + 450, y + 10);
 			g.setColor(Color.gray);
-			g.drawString("Consumable", baseX + 150, point.y + 30);
-			g.drawString("Tools", baseX + 270, point.y + 30);
+			g.drawString("Consumable", x + 210, y + 10);
+			g.drawString("Equipments", x + 330, y + 10);
 		}
 		g.setColor(orgColor);
+	}
+	
+	@Override
+	protected void init() {
+		page = CONSUMABLE;
+		items = player.getConsumable();
+		cursor = 0;
+		topCursor = 0;		
 	}
 
 }

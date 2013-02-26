@@ -3,7 +3,6 @@ package com.zimu.ao.character;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 
-import com.zimu.ao.enums.EquipmentType;
 import com.zimu.ao.item.equipment.Equipment;
 import com.zimu.ao.item.equipment.NullEquipment;
 
@@ -22,21 +21,29 @@ public class YueMing extends AbstractChar {
 		this.currHealth = 90;
 		this.orgHealth = 100;
 		this.health = orgHealth;
-		this.orgAttack = 15;
-		this.attack = orgAttack;
-		this.orgDefence = 5;
-		this.defence = orgDefence;
+		this.orgPrimaryAttack = 15;
+		this.primaryAttack = orgPrimaryAttack;
+		this.orgSecondaryAttack = 10;
+		this.secondaryAttack = orgSecondaryAttack;
+		this.orgPrimaryDefence = 5;
+		this.primaryDefence = orgPrimaryDefence;
+		this.orgArmorDefence = 2;
+		this.armorDefence = orgArmorDefence;
 		initEquipments();
 	}
 	
 	private void initEquipments() {
-		Equipment e = new NullEquipment();
-		equipments.put(EquipmentType.ARMOR, e);
-		equipments.put(EquipmentType.HELMET, e);
-		equipments.put(EquipmentType.PRIMARYWEAPON, e);
-		equipments.put(EquipmentType.SECONDARYWEAPON, e);
-		equipments.put(EquipmentType.AMULET, e);
-		equipments.put(EquipmentType.CHARM, e);
+		Equipment e = null;
+		try {
+			e = new NullEquipment();
+		} catch (Exception exc) {}
+		equipments.put(Equipment.ARMOR, e);
+		equipments.put(Equipment.BOOT, e);
+		equipments.put(Equipment.HELMET, e);
+		equipments.put(Equipment.PRIMARYWEAPON, e);
+		equipments.put(Equipment.SECONDARYWEAPON, e);
+		equipments.put(Equipment.AMULET, e);
+		equipments.put(Equipment.CHARM, e);
 	}
 
 }

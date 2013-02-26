@@ -10,6 +10,7 @@ import com.zimu.ao.character.Player;
 import com.zimu.ao.enums.Direction;
 import com.zimu.ao.enums.Status;
 import com.zimu.ao.item.Item;
+import com.zimu.ao.state.AOGame;
 
 public class SaleBoard {
 	
@@ -62,14 +63,19 @@ public class SaleBoard {
 	
 	public void render(Graphics g, Point point, int gold) {
 		Color orgColor = g.getColor();
-		g.setColor(Color.white);
-		g.fillRect(point.x + 20, point.y + 20, 600, 400);
-		g.setColor(Color.black);
-		g.drawString("Gold: " + String.valueOf(gold), point.x + 50, point.y + 20);
-		g.drawString("Item           Price Amount", point.x + 60, point.y + 60);
+		int x = point.x;
+		int y = point.y;
 		
-		int baseX = point.x + 60;
-		int baseY = point.y + 90;
+		g.setColor(Color.white);
+		g.fillRect(point.x, point.y, AOGame.WIDTH, AOGame.HEIGHT);
+		g.setColor(Color.black);
+		g.drawRect(x + 20, y + 30, 275, 425);
+		g.drawLine(x + 20, y + 60, 275 + x + 20, y + 60);
+		g.drawString("Gold: " + String.valueOf(gold), x + 10, y + 10);
+		g.drawString("Item          Price Amount", x + 60, y + 35);
+
+		x = point.x + 30;
+		y = point.y + 80;
 		for (int i = top_cursor, j = 0; j < ITEMS_PER_PAGE + 1; i++, j++) {
 			if (i >= totalItems) break;
 			Item item = null;
@@ -79,25 +85,25 @@ public class SaleBoard {
 				break;
 			}
 			if (item == null) break;
-			g.drawImage(item.getItem().getImage(), baseX, baseY + (j * 55));
-			g.drawImage(item.getItem().getLabel(), baseX + 35, baseY + (j * 55));
-			g.drawString(String.valueOf(item.getItem().getPrice() / 2), baseX + 155, baseY + 7 + (j * 55));
-			g.drawString(String.valueOf(item.getAmount()), baseX + 205, baseY + 7 + (j * 55));
+			g.drawImage(item.getItem().getImage(), x, y + (j * 55));
+			g.drawImage(item.getItem().getLabel(), x + 35, y + (j * 55));
+			g.drawString(String.valueOf(item.getItem().getPrice() / 2), x + 175, y + 7 + (j * 55));
+			g.drawString(String.valueOf(item.getAmount()), x + 225, y + 7 + (j * 55));
 			if (cursor == i) {
-				g.drawImage(item.getItem().getDescription(), baseX + 250, baseY);
-				g.drawRect(baseX - 30, baseY - 10 + (j * 55), 265, 55);
+				g.drawImage(item.getItem().getDescription(), x + 270, y);
+				g.drawRect(x - 10, y - 10 + (j * 55), 275, 55);
 			}
 		}
 		if (status == Status.SHOP_CONSUMABLE) {
-			g.drawString("Consumable", baseX + 150, point.y + 30);
+			g.drawString("Consumable", x + 160, point.y + 10);
 			g.setColor(Color.gray);
-			g.drawString("Tools", baseX + 270, point.y + 30);
-			g.drawString("Quest", baseX + 350, point.y + 30);
+			g.drawString("Tools", x + 270, point.y + 10);
+			g.drawString("Quest", x + 360, point.y + 10);
 		} else if (status == Status.SHOP_TOOLS) {
-			g.drawString("Tools", baseX + 270, point.y + 30);
+			g.drawString("Tools", x + 280, point.y + 10);
 			g.setColor(Color.gray);
-			g.drawString("Consumable", baseX + 150, point.y + 30);
-			g.drawString("Quest", baseX + 350, point.y + 30);
+			g.drawString("Consumable", x + 160, point.y + 10);
+			g.drawString("Quest", x + 360, point.y + 10);
 		}
 		g.setColor(orgColor);
 	}

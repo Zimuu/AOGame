@@ -1,91 +1,105 @@
 package com.zimu.ao.board;
 
 import java.awt.Point;
-import java.util.Arrays;
 
 import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Input;
 
 import com.zimu.ao.character.AbstractChar;
+import com.zimu.ao.character.Player;
+import com.zimu.ao.enums.Menu;
+import com.zimu.ao.state.AOGame;
 
-public class CharBoard {
+public class CharBoard extends RenderableScreen {
 
-	private AbstractChar[] characters;
-	private int curr_char;
+	private Color green;
 	
-	public CharBoard() {
-
+	public CharBoard(Player player) {
+		this.player = player;
+		green = new Color(0, 153, 51);
 	}
 	
-	public void switchChar() {
-		curr_char++;
-		if (curr_char >= characters.length) curr_char = 0;
-	}
-	
-	public void setChar(AbstractChar[] character) {
-		int length = 0;
-		for (; length < character.length; length++)
-			if (character[length] == null) break;
-		this.characters = Arrays.copyOf(character, length);
+	public boolean actionPerformed(Input input) {
+		if (!draw) return false;
+		if (input.isKeyPressed(Input.KEY_TAB)) {
+			if (cursor < player.getCharacters().size() - 1) cursor++;
+			else cursor = 0;
+		} else if (input.isKeyPressed(Input.KEY_ESCAPE)) {
+			cursor = 0;
+			draw = false;
+			setChanged();
+			notifyObservers(Menu.valueOf(0));
+		}
+		return true;
 	}
 	
 	public void render(Graphics g, Point point) {
 		Color orgColor = g.getColor();
+		int x = point.x;
+		int y = point.y;
+		
 		g.setColor(Color.white);
-		g.fillRect(point.x + 20, point.y + 20, 600, 400);
+		g.fillRect(x, y, AOGame.WIDTH, AOGame.HEIGHT);
 		g.setColor(Color.black);
-		for (int i = 0; i < characters.length; i++) {
-			if (curr_char == i) g.setColor(Color.black);
+		for (int i = 0; i < player.getCharacters().size(); i++) {
+			if (player.getCharacters().get(i) == null) break;
+			if (cursor == i) g.setColor(Color.black);
 			else g.setColor(Color.gray);
-			g.drawString(characters[i].getName(), point.x + 30, point.y + 30 + (i * 32));
+			g.drawString(player.getCharacters().get(i).getName(), x + 20 + (i * 150), y + 15);
 		}
 		g.setColor(Color.black);
 		
-		int baseX = point.x + 150;
-		int baseY = point.y + 50;
-		AbstractChar c = characters[curr_char];
-		g.drawImage(c.getImage(), baseX, baseY);
-		g.drawString("Name    " + c.getName(), baseX + 250, baseY + 10);
-		g.drawString("Level   " + c.getLevel(), baseX + 250, baseY + 40);
-		g.drawString("Exp     " + c.getExperience(), baseX + 250, baseY + 70);
+		AbstractChar c = player.getCharacters().get(cursor);
+		g.drawImage(c.getImage(), x + 50, y + 50);
+		g.drawString("Name    " + c.getName(), x + 300, y + 60);
+		g.drawString("Level   " + c.getLevel(), x + 300, y + 100);
+		g.drawString("Exp     " + c.getExperience(), x + 300, y + 140);
 
-		g.drawImage(c.getHealthImage(), baseX, baseY + 180);
-		g.drawString("Health   " + c.getCurrHealth() + "/" + c.getHealth(), baseX + 50, baseY + 185);
-		int health = c.getHealth() - c.getOrgHealth();
-		if (health < 0) {
-			g.setColor(Color.red);
-			g.drawString(" - " + Math.abs(health), baseX + 200, baseY + 185);
-		} else if (health > 0) {
-			g.setColor(new Color(0, 153, 51));
-			g.drawString(" + " + health, baseX + 200, baseY + 185);			
-		}
-		g.setColor(Color.black);
+		g.drawImage(c.getHealthImage(), x + 50, y + 230);
+		g.drawImage(c.getPrimaryAttackImage(), x + 50, y + 280);
+		g.drawImage(c.getSecondaryAttackImage(), x + 350, y + 280);
+		g.drawImage(c.getPrimaryDefenceImage(), x + 50, y + 330);
+		g.drawImage(c.getArmorDefenceImage(), x + 350, y + 330);
 		
-
-		g.drawImage(c.getAttackImage(), baseX, baseY + 230);
-		g.drawString("Attack   " + c.getOrgAttack(), baseX + 50, baseY + 235);
-		int attack = c.getAttack() -  c.getOrgAttack();
-		if (attack < 0) {
-			g.setColor(Color.red);
-			g.drawString(" - " + Math.abs(attack), baseX + 155, baseY + 235);
-		} else if (attack > 0) {
-			g.setColor(new Color(0, 153, 51));
-			g.drawString(" + " + attack, baseX + 155, baseY + 235);			
-		}
-		g.setColor(Color.black);
 		
-		g.drawImage(c.getDefenceImage(), baseX, baseY + 280);
-		g.drawString("Defence  " + c.getOrgDefence(), baseX + 50, baseY + 285);
-		int defence = c.getDefence() - c.getOrgDefence();
-		if (defence < 0) {
-			g.setColor(Color.red);
-			g.drawString(" - " + Math.abs(defence), baseX + 155, baseY + 285);
-		} else if (defence > 0) {
-			g.setColor(new Color(0, 153, 51));
-			g.drawString(" + " + defence, baseX + 155, baseY + 285);			
-		}
+		g.drawString("Health   " + c.getCurrHealth() + "/", x + 100, y + 235);
+		g.drawString("Primary Attack", x + 100, y + 285);
+		g.drawString("Secondary Attack", x + 390, y + 285);
+		g.drawString("Primary Defence  ", x + 100, y + 335);
+		g.drawString("Armor Defence  ", x + 390, y + 335);
+		
+		int healthDiff = c.getHealth() - c.getOrgHealth();
+		int primaryAttackDiff = c.getPrimaryAttack() -  c.getOrgPrimaryAttack();
+		int secondaryAttackDiff = c.getSecondaryAttack() -  c.getOrgSecondaryAttack();
+		int primaryDefenceDiff = c.getPrimaryDefence() - c.getOrgPrimaryDefence();
+		int armorDefenceDiff = c.getArmorDefence() - c.getOrgArmorDefence();
+		
+		if (healthDiff < 0) g.setColor(Color.red);
+		else if (healthDiff > 0) g.setColor(green);
+		else g.setColor(Color.black);
+		g.drawString(String.valueOf(c.getHealth()), x + 225, y + 235);
+		if (primaryAttackDiff < 0) g.setColor(Color.red);
+		else if (primaryAttackDiff > 0) g.setColor(green);
+		else g.setColor(Color.black);
+		g.drawString(String.valueOf(c.getPrimaryAttack()), x + 265, y + 285);
+		if (secondaryAttackDiff < 0) g.setColor(Color.red);
+		else if (secondaryAttackDiff > 0) g.setColor(green);
+		else g.setColor(Color.black);
+		g.drawString(String.valueOf(c.getSecondaryAttack()), x + 555, y + 285);
+		if (primaryDefenceDiff < 0) g.setColor(Color.red);
+		else if (primaryDefenceDiff > 0) g.setColor(green);
+		g.drawString(String.valueOf(c.getPrimaryDefence()), x + 265, y + 335);
+		if (armorDefenceDiff < 0) g.setColor(Color.red);
+		else if (armorDefenceDiff > 0) g.setColor(green);
+		g.drawString(String.valueOf(c.getArmorDefence()), x + 555, y + 335);
 		
 		g.setColor(orgColor);
+	}
+	
+	@Override
+	protected void init() {
+		cursor = 0;
 	}
 
 }

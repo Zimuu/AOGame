@@ -1,7 +1,9 @@
 package com.zimu.ao.character;
 
-import com.zimu.ao.enums.EquipmentType;
-import com.zimu.ao.enums.Status;
+import java.util.ArrayList;
+import java.util.List;
+
+import com.zimu.ao.board.ItemBoard;
 import com.zimu.ao.item.AbstractItem;
 import com.zimu.ao.item.Item;
 import com.zimu.ao.item.consumable.Apple;
@@ -24,32 +26,33 @@ public class Player {
 
 	private static Player instance;
 	private int gold = 1000;
-	private AbstractChar[] characters;
+	private List<AbstractChar> characters;
 	
-	private Item[] consumable;
-	private Item[] tools;
-	private Item[] questItems;
+	private List<Item> consumable;
+	private List<Item> equipments;
+	private List<Item> questItems;
 	
 	private Player() {
-		consumable = new Item[SIZE];
-		tools = new Item[SIZE];
-		questItems = new Item[20];
-		characters = new AbstractChar[4];
+		consumable = new ArrayList<Item>();
+		equipments = new ArrayList<Item>();
+		questItems = new ArrayList<Item>();
+		characters = new ArrayList<AbstractChar>();
 		try {
-			characters[0] = new YueMing();
-			characters[0].equip(new BasicArmor());
-			characters[0].equip(new BasicHelmet());
-			characters[1] = new LingXing();
-			characters[1].equip(new BasicHelmet());
+			characters.add(new YueMing());
+			characters.add(new LingXing());
+			characters.get(0).equip(new BasicArmor());
+			characters.get(0).equip(new BasicHelmet());
+			characters.get(1).equip(new BasicHelmet());
+			tester();
 		} catch (Exception e) {
 			System.out.println(e.getMessage());
 		}
 	}
 	
-	public void tester() {
+	private void tester() {
 		try {
-			putItem(new BasicArmor());
-			putItem(new BasicHelmet());
+			//putItem(new BasicArmor());
+			//putItem(new BasicHelmet());
 			putItem(new Letter());
 			putItem(new Ring());
 			putItem(new Apple());
@@ -65,19 +68,29 @@ public class Player {
 		return instance;
 	}
 	
+	public int equip(Equipment equipment, AbstractChar character) {
+		int index = 0;
+		for (Item e : equipments)
+			if (equipment.equals((Equipment)e.getItem())) break;
+			else index++;
+		return equip(index, character);
+	}
+	
 	public int equip(int index, AbstractChar character) {
-		Equipment e = (Equipment) tools[index].getItem();
+		Equipment e = (Equipment) equipments.get(index).getItem();
 		Equipment returned_e = character.equip(e);
-		if (returned_e.getEquipmentType() == EquipmentType.NULL)
+		if (returned_e.getEquipmentType() == Equipment.NULL)
 			return 1;
 		if (returned_e.equals(e))
 			return 1;
 		putItem(returned_e);
-		removeItem(index, 1, Status.BAG_TOOLS);
+		removeItem(index, 1, ItemBoard.EQUIPMENT);
 		return 1;
 	}
 	
-	public int unequip(AbstractItem item, AbstractChar character) {
+	public int unequip(int equipmentType, AbstractChar character) {
+		Equipment e = character.unequip(equipmentType);
+		putItem(e);
 		return -1;
 	}
 	
@@ -90,12 +103,12 @@ public class Player {
 			Item it = null;
 			try {
 				if (type == AbstractItem.CONSUMABLE)
-					it = consumable[x];
-				else if (type == AbstractItem.TOOLS)
-					it = tools[x];
+					it = consumable.get(x);
+				else if (type == AbstractItem.EQUIPMENT)
+					it = equipments.get(x);
 				else if (type == AbstractItem.QUESTITEM)
-					it = questItems[x];
-			} catch (ArrayIndexOutOfBoundsException e) {
+					it = questItems.get(x);
+			} catch (Exception e) {
 				break;
 			}
 			if (it == null) break;
@@ -108,96 +121,96 @@ public class Player {
 		if (!added) {
 			if (x >= SIZE)
 				return -1;
-			if (type == AbstractItem.CONSUMABLE) {
-				consumable[x] = new Item(item);
-				consumable[x].add(1);
-			} else if (type == AbstractItem.TOOLS) {
-				tools[x] = new Item(item);
-				tools[x].add(1);
-			} else if (type == AbstractItem.QUESTITEM) {
-				questItems[x] = new Item(item);
-				questItems[x].add(1);
-			}
+			Item newItem = new Item(item);
+			newItem.add(1);
+			if (type == AbstractItem.CONSUMABLE)
+				consumable.add(newItem);
+			else if (type == AbstractItem.EQUIPMENT) 
+				equipments.add(newItem);
+			else if (type == AbstractItem.QUESTITEM)
+				questItems.add(newItem);
 		}
 		
 		return 1;
 	}
 	
-	public void removeItem(int index, int count, Status status) {
+	public void removeItem(int index, int count, int status) {
 		Item item = null;
-		if (status == Status.SHOP_CONSUMABLE)
-			item = consumable[index];
-		else if (status == Status.SHOP_TOOLS)
-			item = tools[index];
+		if (status == ItemBoard.CONSUMABLE)
+			item = consumable.get(index);
+		else if (status == ItemBoard.EQUIPMENT)
+			item = equipments.get(index);
 		if (item == null) return;
 		
 		item.remove(count);
 		if (item.getAmount() == 0) {
-			if (status == Status.SHOP_CONSUMABLE) {
-				consumable[index] = null;
-				format(status);
-			} else if (status == Status.SHOP_TOOLS) {
-				tools[index] = null;
-				format(status);
+			if (status == ItemBoard.CONSUMABLE) {
+				consumable.remove(index);
+				format(status, index);
+			} else if (status == ItemBoard.EQUIPMENT) {
+				equipments.remove(index);
+				format(status, index);
 			}
 		}
 	}
 	
-	public Item[] sellItem(int index, int count, Status status) {
+	public void sellItem(int index, int count, int status) {
 		Item item = null;
-		if (status == Status.SHOP_CONSUMABLE)
-			item = consumable[index];
-		else if (status == Status.SHOP_TOOLS)
-			item = tools[index];
-		if (item == null) return null;
+		if (status == ItemBoard.CONSUMABLE)
+			item = consumable.get(index);
+		else if (status == ItemBoard.EQUIPMENT)
+			item = equipments.get(index);
+		if (item == null) return ;
 		int res = item.remove(count);
 		gold += item.getItem().getPrice() * res / 2;
-		if (item.getAmount() == 0) {
-			if (status == Status.SHOP_CONSUMABLE) {
-				consumable[index] = null;
-				format(status);
-			} else if (status == Status.SHOP_TOOLS) {
-				tools[index] = null;
-				format(status);
+		if (item.getAmount() == ItemBoard.CONSUMABLE) {
+			if (status == ItemBoard.CONSUMABLE) {
+				consumable.remove(index);
+				format(status, index);
+			} else if (status == ItemBoard.EQUIPMENT) {
+				equipments.remove(index);
+				format(status, index);
 			}
 		}
-		if (status == Status.SHOP_CONSUMABLE) 
-			return consumable;
-		else if (status == Status.SHOP_TOOLS)
-			return tools;
-		return null;
 	}
 	
-	private void format(Status status) {
-		if (status == Status.BAG_CONSUMABLE || status == Status.SHOP_CONSUMABLE) {
-			for (int i = 0; i < SIZE; i++)
-				if (consumable[i] == null)
-					for (int j = i + 1; j < SIZE; j++)
-						consumable[j - 1] = consumable[j]; 
-		} else if (status == Status.BAG_TOOLS|| status == Status.SHOP_TOOLS) {
-			for (int i = 0; i < SIZE; i++)
-				if (tools[i] == null)
-					for (int j = i + 1; j < SIZE; j++)
-						tools[j - 1] = tools[j]; 
-		} else if (status == Status.BAG_CONSUMABLE) {
-			for (int i = 0; i < SIZE; i++)
-				if (questItems[i] == null)
-					for (int j = i + 1; j < SIZE; j++)
-						questItems[j - 1] = questItems[j]; 
+	private void format(int status, int index) {
+		if (status == ItemBoard.CONSUMABLE) {
+			for (int j = index + 1; j < SIZE; j++)
+				consumable.set(j - 1, consumable.get(j));
+			consumable.remove(consumable.size() - 1);
+		} else if (status == ItemBoard.EQUIPMENT) {
+			for (int j = index + 1; j < SIZE; j++)
+				equipments.set(j - 1, equipments.get(j));
+			equipments.remove(equipments.size() - 1);
+		} else if (status == ItemBoard.QUEST) {
+			for (int j = index + 1; j < SIZE; j++)
+				questItems.set(j - 1, questItems.get(j));
+			questItems.remove(questItems.size() - 1);
 		}
 	}
 	
-	public Item[] getItems(Status status) {
-		if (status == Status.BAG_CONSUMABLE || status == Status.SHOP_CONSUMABLE)
-			return consumable;
-		else if (status == Status.BAG_TOOLS|| status == Status.SHOP_TOOLS)
-			return tools;
-		else if (status == Status.BAG_QUESTITEMS) 
-			return questItems;
-		return null;
+	public List<Equipment> getEquipments(int equipmentType) {
+		List<Equipment> eqs = new ArrayList<Equipment>();
+		for (Item i : equipments)
+			if (((Equipment) i.getItem()).getEquipmentType() == equipmentType)
+				eqs.add((Equipment) i.getItem());
+		return eqs;
 	}
 	
-	public AbstractChar[] getCharacters() {
+	public List<Item> getEquipments() {
+		return equipments;
+	}
+	
+	public List<Item> getConsumable() {
+		return consumable;
+	}
+	
+	public List<Item> getQuestItems() {
+		return questItems;
+	}
+
+	public List<AbstractChar> getCharacters() {
 		return characters;
 	}
 

@@ -1,13 +1,15 @@
 package com.zimu.ao.item.equipment;
 
+import org.newdawn.slick.Image;
+import org.newdawn.slick.SlickException;
+
 import com.zimu.ao.character.AbstractChar;
-import com.zimu.ao.enums.EquipmentType;
 
 public class NullEquipment extends Equipment {
 
-	public NullEquipment() {
-		super("NullEquipment", 50, null, null, null);
-		this.equipmentType = EquipmentType.NULL;
+	public NullEquipment() throws SlickException {
+		super("NullEquipment", 50, new Image("resource/image/item/nullitem.jpg"), null, null);
+		this.equipmentType = NULL;
 	}
 
 	@Override
