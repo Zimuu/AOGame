@@ -33,6 +33,7 @@ public class EquipmentBoard extends RenderableScreen {
 	private int state;
 	private int stateCursor;
 	private int charCursor;
+	private int equipCursor;
 	
 	public EquipmentBoard(Player player) {
 		this.player = player;
@@ -62,13 +63,13 @@ public class EquipmentBoard extends RenderableScreen {
 				if (input.isKeyPressed(Input.KEY_TAB)) {
 					if (charCursor < player.getCharacters().size() - 1) charCursor++;
 					else charCursor = 0;
-					cursor = -1;
+					equipCursor = -1;
 				} else if (input.isKeyPressed(Input.KEY_LEFT) || input.isKeyPressed(Input.KEY_UP)) {
-					if (cursor > Equipment.HELMET) cursor--;
+					if (equipCursor > Equipment.HELMET) equipCursor--;
 				} else if (input.isKeyPressed(Input.KEY_RIGHT) || input.isKeyPressed(Input.KEY_DOWN)) {
-					if (cursor < Equipment.NULL - 1) cursor++;
+					if (equipCursor < Equipment.NULL - 1) equipCursor++;
 				} else if (input.isKeyPressed(Input.KEY_SPACE)) {
-					if (cursor != -1) {
+					if (equipCursor != -1) {
 						state = SLOT;
 						stateCursor = 0;
 					}
@@ -87,9 +88,9 @@ public class EquipmentBoard extends RenderableScreen {
 					AbstractChar c = player.getCharacters().get(charCursor);
 					if (stateCursor == 0) {
 						state = ITEM;
-						equipments = player.getEquipments(cursor);
+						equipments = player.getEquipments(equipCursor);
 					} else if (stateCursor == 1) {
-						player.unequip(cursor, c);
+						player.unequip(equipCursor, c);
 						state = NORMAL;
 						stateCursor = 0;
 					}
@@ -109,7 +110,7 @@ public class EquipmentBoard extends RenderableScreen {
 				} else if (input.isKeyPressed(Input.KEY_SPACE)) {
 					if (equipments.size() == 0) return true;
 					player.equip(equipments.get(stateCursor), player.getCharacters().get(charCursor));
-					equipments = player.getEquipments(cursor);
+					equipments = player.getEquipments(equipCursor);
 					stateCursor = 0;
 					state = NORMAL;
 				}
@@ -158,7 +159,11 @@ public class EquipmentBoard extends RenderableScreen {
 		int secondaryAttackDiff = c.getSecondaryAttack() - c.getOrgSecondaryAttack();
 		int primaryDefenceDiff = c.getPrimaryDefence() - c.getOrgPrimaryDefence();
 		int armorDefenceDiff = c.getArmorDefence() - c.getOrgArmorDefence();
-		
+		drawStatus(g, c.getHealth(), c.getOrgHealth(), x + 90, y + 57);
+		drawStatus(g, c.getPrimaryAttack(), c.getOrgPrimaryAttack(), x + 55, y + 107);
+		drawStatus(g, c.getSecondaryAttack(), c.getOrgSecondaryAttack(), x + 55, y + 157);
+		drawStatus(g, c.getPrimaryDefence(), c.getOrgPrimaryDefence(), x + 55, y + 207);
+		drawStatus(g, c.getArmorDefence(), c.getOrgArmorDefence(), x + 55, y + 257);
 		if (healthDiff < 0) g.setColor(Color.red);
 		else if (healthDiff > 0) g.setColor(green);
 		else g.setColor(Color.black);
@@ -191,13 +196,13 @@ public class EquipmentBoard extends RenderableScreen {
 		for (Integer type : keys) {
 			Point point = equipmentSlots.get(type);
 			g.drawImage(equipments.get(type).getImage(), x + point.x, y + point.y);
-			if (cursor == type) g.setColor(green);
+			if (equipCursor == type) g.setColor(green);
 			else g.setColor(Color.black);
 			g.drawRect(x + point.x - 1, y + point.y - 1, 34, 34);
 		}
 		if (state == SLOT) {
 			g.setColor(Color.white);
-			Point point = equipmentSlots.get(cursor);
+			Point point = equipmentSlots.get(equipCursor);
 			g.fillRect(point.x + 40, point.y + 35, 90, 40);
 			g.setColor(Color.black);
 			g.drawRect(point.x + 40, point.y + 35, 80, 40);
@@ -215,24 +220,94 @@ public class EquipmentBoard extends RenderableScreen {
 		g.drawRect(x + 450, y + 100, 180, 240);
 		for (int i = topCursor, j = 0; j < ITEMS_PER_PAGE + 1; i++, j++) {
 			if (i >= equipments.size()) break;
-			Equipment eq = null;
+			Equipment e = null;
 			try {
-				eq = equipments.get(i);
-			} catch (Exception e) {
+				e = equipments.get(i);
+			} catch (Exception exc) {
 				break;
 			}
-			if (eq == null) break;
-			g.drawImage(eq.getImage(), x + 452, y + 100 + (j * 40));
-			g.drawImage(eq.getLabel(), x + 485, y + 100 + (j * 40));
+			if (e == null) break;
+			g.drawImage(e.getImage(), x + 452, y + 100 + (j * 40));
+			g.drawImage(e.getLabel(), x + 485, y + 100 + (j * 40));
 			if (stateCursor == i) {
 				g.drawRect(x + 450, y + 100 + (j * 55), 180, 40);
+				
+				Equipment curr_e = player.getCharacters().get(charCursor).getEquipments().get(equipCursor);
+				int healthDiff = e.getHealth() - curr_e.getHealth();
+				int primaryAttackDiff = e.getPrimaryAttack() - curr_e.getPrimaryAttack();
+				int secondaryAttackDiff = e.getSecondaryAttack() - curr_e.getSecondaryAttack();
+				int primaryDefenceDiff = e.getPrimaryDefence() - curr_e.getPrimaryDefence();
+				int armorDefenceDiff = e.getArmorDefence() - curr_e.getArmorDefence();
+
+				//g.drawImage(c.getHealthImage(), x + 10, y + 50);
+				//g.drawImage(c.getPrimaryAttackImage(), x + 10, y + 100);
+				//g.drawImage(c.getSecondaryAttackImage(), x + 10, y + 150);
+				//g.drawImage(c.getPrimaryDefenceImage(), x + 10, y + 200);
+				//g.drawImage(c.getArmorDefenceImage(), x + 10, y + 250);
+				if (healthDiff > 0) {
+					g.setColor(green);
+					g.drawString("+  " + Math.abs(healthDiff), x + 80, y + 50);
+				} else if (healthDiff < 0) {
+					g.setColor(Color.red);
+					g.drawString("-  " + Math.abs(healthDiff), x + 80, y + 50);
+				}
+				if (healthDiff > 0) {
+					g.setColor(green);
+					g.drawString("+  " + Math.abs(healthDiff), x + 80, y + 50);
+				} else if (healthDiff < 0) {
+					g.setColor(Color.red);
+					g.drawString("-  " + Math.abs(healthDiff), x + 80, y + 50);
+				}
+				if (healthDiff > 0) {
+					g.setColor(green);
+					g.drawString("+  " + Math.abs(healthDiff), x + 80, y + 50);
+				} else if (healthDiff < 0) {
+					g.setColor(Color.red);
+					g.drawString("-  " + Math.abs(healthDiff), x + 80, y + 50);
+				}
+				if (healthDiff > 0) {
+					g.setColor(green);
+					g.drawString("+  " + Math.abs(healthDiff), x + 80, y + 50);
+				} else if (healthDiff < 0) {
+					g.setColor(Color.red);
+					g.drawString("-  " + Math.abs(healthDiff), x + 80, y + 50);
+				}
+				if (healthDiff > 0) {
+					g.setColor(green);
+					g.drawString("+  " + Math.abs(healthDiff), x + 80, y + 50);
+				} else if (healthDiff < 0) {
+					g.setColor(Color.red);
+					g.drawString("-  " + Math.abs(healthDiff), x + 80, y + 50);
+				}
 			}
+		}
+	}
+	
+	private void drawStatus(Graphics g, int x, int y, int curr, int orig) {
+		int diff = curr - orig;
+		if (diff > 0)
+			g.setColor(green);
+		else if (diff < 0)
+			g.setColor(Color.red);
+		else
+			g.setColor(Color.black);
+		g.drawString(String.valueOf(curr), x, y);
+	}
+	
+	private void drawDifference(Graphics g, int x, int y, int minuend, int substrahend) {
+		int diff = minuend - substrahend;
+		if (diff > 0) {
+			g.setColor(green);
+			g.drawString("+ " + diff, x, y);
+		} else if (diff < 0) {
+			g.setColor(Color.red);
+			g.drawString("- " + diff, x, y);
 		}
 	}
 	
 	@Override
 	protected void init() {
-		cursor = -1;
+		equipCursor = -1;
 		state = NORMAL;
 	}
 
